@@ -38,6 +38,12 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
+static int cmd_si(char *args) {
+  uint64_t step_num = strtoul(args, args+strlen(args), 10);
+  cpu_exec(step_num);
+  return 0;
+}
+
 static struct {
   char *name;
   char *description;
@@ -48,6 +54,7 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
 
   /* TODO: Add more commands */
+  { "si", "step into [N] steps of the program", cmd_si },
 
 };
 
