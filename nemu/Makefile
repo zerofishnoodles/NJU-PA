@@ -67,7 +67,7 @@ IMG :=
 NEMU_EXEC := $(BINARY) $(ARGS) $(IMG)
 
 $(BINARY): $(OBJS)
-	$(call git_commit, "compile")
+#	$(call git_commit, "compile")
 	@echo + LD $@
 	@$(LD) -O2 -rdynamic $(SO_LDLAGS) -o $@ $^ -lSDL2 -lreadline -ldl
 
