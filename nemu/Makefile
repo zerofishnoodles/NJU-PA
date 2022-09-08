@@ -1,4 +1,5 @@
 NAME = nemu
+msg :=
 
 ifneq ($(MAKECMDGOALS),clean) # ignore check for make clean
 ISA ?= x86
@@ -55,7 +56,7 @@ $(OBJ_DIR)/%.o: src/%.c
 
 # Some convenient rules
 
-.PHONY: app run gdb clean run-env $(QEMU_SO)
+.PHONY: app run gdb clean run-env $(QEMU_SO) commit
 app: $(BINARY)
 
 override ARGS ?= -l $(BUILD_DIR)/nemu-log.txt
@@ -73,12 +74,15 @@ $(BINARY): $(OBJS)
 run-env: $(BINARY) $(QEMU_SO)
 
 run: run-env
-	$(call git_commit, "run")
+#   $(call git_commit, "run")
 	$(NEMU_EXEC)
 
 gdb: run-env
-	$(call git_commit, "gdb")
+#	$(call git_commit, "gdb")
 	gdb -s $(BINARY) --args $(NEMU_EXEC)
+
+commit:
+	$(call git_commit, $(msg))
 
 clean:
 	-rm -rf $(BUILD_DIR)
