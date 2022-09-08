@@ -9,7 +9,7 @@ const char *regsl[] = {
 
 void isa_reg_display() {
   for(int i=0; i<32; i++) {
-    printf("%s\t%x\t%d\n", regsl[i], *regsl[i], *regsl[i]);
+    printf("%s\t%X\t%d\n", regsl[i], *regsl[i], *regsl[i]);
   }
 }
 
