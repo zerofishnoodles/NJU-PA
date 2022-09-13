@@ -40,7 +40,8 @@ static int cmd_q(char *args) {
 static int cmd_help(char *args);
 
 static int cmd_si(char *args) {
-  uint64_t step_num = strtoul(args, args+strlen(args), 10);
+  char *ptr;
+  uint64_t step_num = strtoul(args, &ptr, 10);
   cpu_exec(step_num);
   return 0;
 }
@@ -50,6 +51,20 @@ static int cmd_info(char *args) {
     isa_reg_display();
     return 0;
   }
+  return -1;
+}
+
+static int cmd_x(char *args) {
+  char *token1 = strtok(args, " ");
+  char *token2 = strtok(NULL, " ");
+  char *ptr1, *ptr2;
+  // for now it only accept fixed hex address instead of an expr
+  int num_bytes = strtoul(token1, &ptr1, 10);
+  vaddr_t addr = strtoul(token2+2, &ptr2, 16);
+  for(int i=0;i<num_bytes;i++) {
+    printf("0x%08x ", vaddr_read(addr+i*4, 4));
+  }
+  return 0;
 }
 
 static struct {
@@ -64,6 +79,7 @@ static struct {
   /* TODO: Add more commands */
   { "si", "step into [N] steps of the program", cmd_si },
   { "info", "get the info of [arg]", cmd_info},
+  { "x", "dispaly the [N] bytes content of the address [expr]", cmd_x},
 
 };
 
