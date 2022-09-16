@@ -15,11 +15,11 @@ int main(int argc, char *argv[]) {
   fp = fopen("/home/hust/ics2019_1/nemu/tools/gen-expr/input", "r");
   if(fp == NULL) panic("file open failed!");
   while(!feof(fp)) {
-    int res;
+    uint32_t res;
     char exp[65535] = {0};
-    fscanf(fp, "%d %s\n", &res, exp);
-    printf("%d %s  ", res, exp);
-    int res_t = expr(exp, &success);
+    fscanf(fp, "%u %s\n", &res, exp);
+    printf("%u %s  ", res, exp);
+    uint32_t res_t = expr(exp, &success);
     if(success == false) panic("make token failed!");
     else if (res == res_t) {printf("success!\n");}
     else panic("expr wrong!");

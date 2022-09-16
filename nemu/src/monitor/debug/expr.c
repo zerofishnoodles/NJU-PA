@@ -1,10 +1,12 @@
-#include "nemu.h"
+#include <nemu.h>
 
 /* We use the POSIX regex functions to process regular expressions.
  * Type 'man regex' for more information about POSIX regex functions.
  */
 #include <sys/types.h>
 #include <regex.h>
+
+
 
 enum {
   TK_NOTYPE = 256, TK_EQ, TK_INT
@@ -92,9 +94,21 @@ static bool if_neg_op(int p) {
 static void convert_neg_int(void) {
   for(int i=0;i<nr_token;i++) {
     if(tokens[i].type == '-' && (i == 0 || if_neg_op(i-1) == true)){
-      if(i+1>=nr_token || tokens[i+1].type != TK_INT) panic("Bad Expression!");
-      else tokens[i+1].str[0] = '-';
+      if(i+1>=nr_token || tokens[i+1].type != TK_INT) continue;
+      else {
+        tokens[i+1].str[0] = '-';
+        // delete '-' token
+        for(int j=i+1;j<nr_token;j++) tokens[j-1] = tokens[j];
+        nr_token--;
+      }
     }
+  }
+  // add 0 brefor --1
+  if(tokens[0].type == '-') {
+    for(int j=nr_token-1;j>=0;j--) tokens[j+1] = tokens[j];
+    tokens[0].type = TK_INT;
+    strcpy(tokens[0].str, "0");
+    nr_token++;
   }
   return; 
 }
