@@ -50,6 +50,13 @@ static int cmd_info(char *args) {
   if(strcmp(args, "r") == 0) {
     isa_reg_display();
     return 0;
+  }else if(strcmp(args, "w") == 0) {
+    WP* cur = get_head();
+    while(cur) {
+      printf("watchpoint %d: %s\n", cur->NO, cur->str);
+      cur = cur->next;
+    }
+    return 0;
   }
   return -1;
 }
@@ -67,6 +74,32 @@ static int cmd_x(char *args) {
   return 0;
 }
 
+static int cmd_watch(char *args) {
+  bool success;
+  uint32_t res = expr(args, &success);
+  if(success == false) panic("expr wrong!");
+  WP* wp = new_wp();
+  wp->res = res;
+  strcpy(wp->str, args);
+  printf("Set watchpoint %d: %s\n", wp->NO, wp->str);
+  return 0;
+}
+
+static int cmd_d(char *args) {
+  int wp_no = strtol(args, NULL, 10);
+  WP* cur = get_head();
+  int flag = -1;
+  while(cur) {
+    if(cur->NO == wp_no){
+      free_wp(cur);
+      flag = 0;
+    }
+    cur = cur -> next;
+  }
+  if(flag == 0) printf("delete watchpoint %d\n", wp_no);
+  return flag;
+}
+
 static struct {
   char *name;
   char *description;
@@ -80,6 +113,8 @@ static struct {
   { "si", "step into [N] steps of the program", cmd_si },
   { "info", "get the info of [arg]", cmd_info},
   { "x", "dispaly the [N] bytes content of the address [expr]", cmd_x},
+  { "watch", "set watchpoint of an [expr]", cmd_watch},
+  { "d", "delete watchpoint of [NO]", cmd_d},
 
 };
 
