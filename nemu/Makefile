@@ -56,7 +56,7 @@ $(OBJ_DIR)/%.o: src/%.c
 
 # Some convenient rules
 
-.PHONY: app run gdb clean run-env $(QEMU_SO) commit
+.PHONY: app run gdb clean run-env $(QEMU_SO) commit count
 app: $(BINARY)
 
 override ARGS ?= -l $(BUILD_DIR)/nemu-log.txt
@@ -83,6 +83,9 @@ gdb: run-env
 
 commit:
 	$(call git_commit, $(msg))
+
+count:
+	@find . -name "*.[c,h]" | xargs cat | grep -v ^$$ | wc -l
 
 clean:
 	-rm -rf $(BUILD_DIR)

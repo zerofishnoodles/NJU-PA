@@ -113,7 +113,7 @@ static struct {
   { "si", "step into [N] steps of the program", cmd_si },
   { "info", "get the info of [arg]", cmd_info},
   { "x", "dispaly the [N] bytes content of the address [expr]", cmd_x},
-  { "watch", "set watchpoint of an [expr]", cmd_watch},
+  { "w", "set watchpoint of an [expr]", cmd_watch},
   { "d", "delete watchpoint of [NO]", cmd_d},
 
 };
