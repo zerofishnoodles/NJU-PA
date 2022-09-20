@@ -22,3 +22,9 @@ make_EHelper(st) {
     default: assert(0);
   }
 }
+
+make_EHelper(li) {
+  rtl_sr(id_dest->reg, &id_src2->val, decinfo.width);
+
+  print_asm_template2(li);
+}
