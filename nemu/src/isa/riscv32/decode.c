@@ -52,11 +52,41 @@ make_DHelper(st) {
   decode_op_r(id_dest, decinfo.isa.instr.rs2, true);
 }
 
-make_DHelper(li) {
+make_DHelper(addi) {
   // li is expanded to addi rd, x0, imm
+
+  decode_op_r(id_src, decinfo.isa.instr.rs1, true); 
+
   decode_op_i(id_src2, decinfo.isa.instr.simm11_0, true);
   print_Dop(id_src2->str, OP_STR_SIZE, "0x%x", decinfo.isa.instr.simm11_0);
 
-  decode_op_r(id_src, 0, true);  // $0 
   decode_op_r(id_dest, decinfo.isa.instr.rd, true);
+}
+
+make_DHelper(auipc) {
+  id_src->val = (rtlreg_t)(decinfo.seq_pc);
+
+  decode_op_i(id_src2, (decinfo.isa.instr.imm31_12<<12), true);
+  print_Dop(id_src2->str, OP_STR_SIZE, "0x%x", decinfo.isa.instr.imm31_12);
+
+  decode_op_r(id_dest, decinfo.isa.instr.rd, false);
+}
+
+make_DHelper(jal) {
+  int32_t simm = (decinfo.isa.instr.simm20<<20)|(decinfo.isa.instr.imm19_12<<12)|(decinfo.isa.instr.imm11_<<11)|(decinfo.isa.instr.imm10_1<<1);
+  decode_op_i(id_src, simm, true);
+  print_Dop(id_src->str, OP_STR_SIZE, "0x%x", id_src->val);
+
+  id_src2->val = decinfo.seq_pc;
+
+  decode_op_r(id_dest, decinfo.isa.instr.rd, false);
+}
+
+make_DHelper(jalr) {
+  decode_op_r(id_src, decinfo.isa.instr.rs1, true);
+  
+  decode_op_i(id_src2, decinfo.isa.instr.simm11_0, true);
+  print_Dop(id_src2->str, OP_STR_SIZE, "0x%x", id_src2->val);
+
+  decode_op_r(id_dest, decinfo.isa.instr.rd, false);
 }
