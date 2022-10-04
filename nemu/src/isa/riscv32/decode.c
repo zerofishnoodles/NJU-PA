@@ -50,9 +50,10 @@ make_DHelper(st) {
   rtl_add(&id_src->addr, &id_src->val, &id_src2->val);
 
   decode_op_r(id_dest, decinfo.isa.instr.rs2, true);
+
 }
 
-make_DHelper(addi) {
+make_DHelper(I) {
   // li is expanded to addi rd, x0, imm
 
   decode_op_r(id_src, decinfo.isa.instr.rs1, true); 
@@ -77,8 +78,6 @@ make_DHelper(jal) {
   decode_op_i(id_src, simm, true);
   print_Dop(id_src->str, OP_STR_SIZE, "0x%x", id_src->val);
 
-  id_src2->val = decinfo.seq_pc;
-
   decode_op_r(id_dest, decinfo.isa.instr.rd, false);
 }
 
@@ -89,4 +88,23 @@ make_DHelper(jalr) {
   print_Dop(id_src2->str, OP_STR_SIZE, "0x%x", id_src2->val);
 
   decode_op_r(id_dest, decinfo.isa.instr.rd, false);
+}
+
+make_DHelper(R) {
+  decode_op_r(id_src, decinfo.isa.instr.rs1, true);
+
+  decode_op_r(id_src2, decinfo.isa.instr.rs2, true);
+
+  decode_op_r(id_dest, decinfo.isa.instr.rd, false);
+
+}
+
+
+make_DHelper(branch) {
+  decode_op_r(id_src, decinfo.isa.instr.rs1, true);
+
+  decode_op_r(id_src2, decinfo.isa.instr.rs2, true);
+  
+  decode_op_i(id_dest, (decinfo.isa.instr.imm4_1<<1) | (decinfo.isa.instr.imm10_5<<5) | (decinfo.isa.instr.imm11<<11) | (decinfo.isa.instr.simm12<<12), true);
+
 }

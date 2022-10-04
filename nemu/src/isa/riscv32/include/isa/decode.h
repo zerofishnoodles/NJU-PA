@@ -55,9 +55,11 @@ struct ISADecodeInfo {
 make_DHelper(U);
 make_DHelper(ld);
 make_DHelper(st);
-make_DHelper(addi);
 make_DHelper(auipc);
 make_DHelper(jal);
 make_DHelper(jalr);
+make_DHelper(branch);
+make_DHelper(R);
+make_DHelper(I);
 
 #endif
