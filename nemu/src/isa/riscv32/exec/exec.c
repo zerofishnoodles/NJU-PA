@@ -20,7 +20,7 @@ static make_EHelper(store) {
 }
 
 static OpcodeEntry branch_table [8] = {
-  EX(beq), EX(bne) , EMPTY, EMPTY, EX(blt), EX(bge), EX(bltu), EMPTY
+  EX(beq), EX(bne) , EMPTY, EMPTY, EX(blt), EX(bge), EX(bltu), EX(bgeu)
 };
 
 static make_EHelper(branch) {
@@ -56,12 +56,15 @@ static make_EHelper(xor_div) {
   }
 }
 
-static make_EHelper(srl_sra) {
+static make_EHelper(srl_sra_divu) {
   if(decinfo.isa.instr.funct7 == 0b0000000) { // srl
     OpcodeEntry e = EX(srl);
     idex(pc, &e);
   }else if(decinfo.isa.instr.funct7 == 0b0100000) { // sra
     OpcodeEntry e = EX(sra);
+    idex(pc, &e);
+  }else if(decinfo.isa.instr.funct7 == 0b0000001) { // divu
+    OpcodeEntry e = EX(divu);
     idex(pc, &e);
   }else{
     OpcodeEntry e = EMPTY;
@@ -97,7 +100,7 @@ static make_EHelper(sll_mulh) {
 
 
 static OpcodeEntry Rcompute_table [8] = {
-  /* b0 */  EX(add_sub_mul), EX(sll_mulh), EX(slt), EX(sltu), EX(xor_div), EX(srl_sra), EX(or_rem), EX(and),
+  /* b0 */  EX(add_sub_mul), EX(sll_mulh), EX(slt), EX(sltu), EX(xor_div), EX(srl_sra_divu), EX(or_rem), EX(and),
 };
 
 static make_EHelper(Rcompute) {

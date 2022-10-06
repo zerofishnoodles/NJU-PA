@@ -18,6 +18,7 @@ make_EHelper(bne);
 make_EHelper(bge);
 make_EHelper(blt);
 make_EHelper(bltu);
+make_EHelper(bgeu);
 
 make_EHelper(add);
 make_EHelper(sub);
@@ -30,6 +31,7 @@ make_EHelper(sra);
 make_EHelper(or);
 make_EHelper(and);
 make_EHelper(div);
+make_EHelper(divu);
 make_EHelper(mul);
 make_EHelper(mulh);
 make_EHelper(rem);
