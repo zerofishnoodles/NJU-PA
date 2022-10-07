@@ -128,11 +128,29 @@ static make_EHelper(Icompute) {
   idex(pc, &Icompute_table[decinfo.isa.instr.funct3]);
 }
 
+static make_EHelper(ecall_sret) {
+  if(decinfo.isa.instr.csr == 0) {
+    OpcodeEntry e = EX(ecall);
+    idex(pc, &e);
+  }else{
+    OpcodeEntry e = EX(sret);
+    idex(pc, &e);
+  }
+}
+
+static OpcodeEntry csr_table [8] = {
+  EX(ecall_sret), EX(csrrw), EX(csrrs), EMPTY, EMPTY, EMPTY, EMPTY, EMPTY
+};
+
+static make_EHelper(csr) {
+  idex(pc, &csr_table[decinfo.isa.instr.funct3]);
+}
+
 static OpcodeEntry opcode_table [32] = {
   /* b00 */ IDEX(ld, load), EMPTY, EMPTY, EMPTY, IDEX(I, Icompute), IDEX(auipc,auipc), EMPTY, EMPTY,
   /* b01 */ IDEX(st, store), EMPTY, EMPTY, EMPTY, IDEX(R,Rcompute), IDEX(U, lui), EMPTY, EMPTY,
   /* b10 */ EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-  /* b11 */ IDEX(branch,branch), IDEX(jalr,jalr), EX(nemu_trap), IDEX(jal, jal), EMPTY, EMPTY, EMPTY, EMPTY,
+  /* b11 */ IDEX(branch,branch), IDEX(jalr,jalr), EX(nemu_trap), IDEX(jal, jal), IDEX(csr, csr), EMPTY, EMPTY, EMPTY,
 };
 
 void isa_exec(vaddr_t *pc) {

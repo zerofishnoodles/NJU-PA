@@ -45,3 +45,8 @@ make_EHelper(srli);
 make_EHelper(srai);
 make_EHelper(ori);
 make_EHelper(andi);
+
+make_EHelper(ecall);
+make_EHelper(csrrs);
+make_EHelper(csrrw);
+make_EHelper(sret);

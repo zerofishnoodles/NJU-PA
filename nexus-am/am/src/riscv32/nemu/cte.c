@@ -1,5 +1,6 @@
 #include <am.h>
 #include <riscv32.h>
+#include "klib.h"
 
 static _Context* (*user_handler)(_Event, _Context*) = NULL;
 
@@ -8,6 +9,10 @@ _Context* __am_irq_handle(_Context *c) {
   if (user_handler) {
     _Event ev = {0};
     switch (c->cause) {
+      case _EVENT_YIELD:
+        ev.event = _EVENT_YIELD;
+        c->epc += 4;
+        break;
       default: ev.event = _EVENT_ERROR; break;
     }
 
@@ -37,7 +42,7 @@ _Context *_kcontext(_Area stack, void (*entry)(void *), void *arg) {
 }
 
 void _yield() {
-  asm volatile("li a7, -1; ecall");
+  asm volatile("li a7, 5; ecall");
 }
 
 int _intr_read() {
