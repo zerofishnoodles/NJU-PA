@@ -8,13 +8,10 @@ typedef struct watchpoint {
   struct watchpoint *next;
 
   /* TODO: Add more members if necessary */
-  uint32_t res;
-  char str[32];
+
+  char str[32]; //表达式
+  int value; //表达式的值
 
 } WP;
-
-WP* new_wp(void);
-void free_wp(WP *wp);
-WP* get_head();
 
 #endif

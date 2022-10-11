@@ -9,7 +9,7 @@ int printf(const char *fmt, ...)
   va_list ap;
   va_start(ap, fmt);
   int length = vsprintf(buf, fmt, ap);
-  va_end(ap);
+  va_end(ap); 
   int i = 0;
   while (buf[i] != '\0')
   {
@@ -70,7 +70,7 @@ int vsprintf(char *out, const char *fmt, va_list ap)
       }
       case 'x':
       {
-        int n = va_arg(ap, int);
+        unsigned int n = va_arg(ap, int);
         if (n == 0)
         {
           *temp++ = '0';
@@ -78,11 +78,11 @@ int vsprintf(char *out, const char *fmt, va_list ap)
           *temp++ = '0';
           break;
         }
-        if (n < 0)
-        {
-          *temp++ = '-';
-          n = -n;
-        }
+        // if (n < 0)
+        // {
+        //   *temp++ = '-';
+        //   n = -n;
+        // }
         char buf[12];
         int i = 0;
         while (n != 0)

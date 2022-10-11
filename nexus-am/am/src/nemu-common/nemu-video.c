@@ -21,9 +21,9 @@ size_t __am_video_write(uintptr_t reg, void *buf, size_t size) {
       _DEV_VIDEO_FBCTL_t *ctl = (_DEV_VIDEO_FBCTL_t *)buf;
       int x=ctl->x,y=ctl->y,h=ctl->h,w=ctl->w;
       int W=screen_width();
-      for(int cur_y = 0; cur_y < ctl->h; cur_y++) {
-        for(int cur_x = 0; cur_x < ctl->w; cur_x++) {
-          uint32_t addr = FB_ADDR + (((ctl->y + cur_y) * W) + ctl->x + cur_x) * 4;
+      for(int cur_y = 0; cur_y < h; cur_y++) {
+        for(int cur_x = 0; cur_x < w; cur_x++) {
+          uint32_t addr = FB_ADDR + (((y + cur_y) * W) + x + cur_x) * 4;
           uint32_t data = ctl->pixels[cur_y * w + cur_x];
           outl(addr, data);
         }

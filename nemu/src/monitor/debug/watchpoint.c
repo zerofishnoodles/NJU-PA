@@ -20,38 +20,50 @@ void init_wp_pool() {
 
 /* TODO: Implement the functionality of watchpoint */
 
-WP* new_wp(void) {
-  WP* ret = free_;
-  ret->next = NULL;
-  if(ret == NULL) panic("no free watchpoint");
-  free_ = free_->next;
-  if(head == NULL) {
-    head = ret;
-  }else{
-    ret->next = head;
-    head = ret;
+WP* new_wp(){
+  if(free_ == NULL){
+    printf("watchpoints:FULL");
+    assert(0);
   }
-  return ret;
+  WP *new=free_;
+  free_=free_->next;
+  new->next=head;
+  head=new;
+  return new;
 }
 
-void free_wp(WP* wp) {
-  if(head == wp) {
-    head = head->next;
-    wp->next = free_;
-    free_ = wp;
-  }else{
-    for(int i=0;i<NR_WP;i++){
-      if(wp_pool[i].next == wp){
-        wp_pool[i].next = wp->next;
-      }
+void free_wp(int NO){
+  if(head==NULL||NO<0||NO>NR_WP){
+    printf("Free Watchpoint Failed. Don't exist\n");
+    assert(0);
+  }
+  WP *temp=head;
+  WP *pre=(WP*)malloc(sizeof(WP));
+  pre->next=temp;
+  while(temp->NO!=NO){
+    pre=pre->next;
+    temp=temp->next;
+  }
+  if(temp==NULL)
+    return;
+  pre->next=pre->next->next;
+  if(temp==head)
+    head = temp->next;
+  temp->next = free_;
+  free_ = temp;
+}
+
+void print_wp(){
+  if(head==NULL)
+    printf("watchpoint : None\n");
+  else{
+    printf("%-10s %-20s %-10s\n", "NO", "EXPR", "VALUE");
+    for(WP *temp=head; temp!=NULL;temp=temp->next){
+      printf("%-10d %-20s %-10d\n", temp->NO,temp->str,temp->value);
     }
-    wp->next = free_;
-    free_ = wp;
   }
-  return;
 }
 
-WP* get_head(void) {
+WP* get_head(){
   return head;
 }
-

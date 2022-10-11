@@ -1,8 +1,7 @@
 NAME = nemu
-msg :=
 
 ifneq ($(MAKECMDGOALS),clean) # ignore check for make clean
-ISA ?= riscv32
+ISA ?= x86
 ISAS = $(shell ls src/isa/)
 $(info Building $(ISA)-$(NAME))
 
@@ -31,7 +30,7 @@ include Makefile.git
 CC = gcc
 LD = gcc
 INCLUDES  = $(addprefix -I, $(INC_DIR))
-CFLAGS   += -O2 -MMD -Wall -ggdb3 $(INCLUDES) -D__ISA__=$(ISA) -fomit-frame-pointer #-mmanual-endbr -fcf-protection=none #-Werror
+CFLAGS   += -O2 -MMD -Wall -ggdb3 $(INCLUDES) -D__ISA__=$(ISA) -fomit-frame-pointer #-Werror
 
 QEMU_DIFF_PATH = $(NEMU_HOME)/tools/qemu-diff
 QEMU_SO = $(QEMU_DIFF_PATH)/build/$(ISA)-qemu-so
@@ -56,7 +55,7 @@ $(OBJ_DIR)/%.o: src/%.c
 
 # Some convenient rules
 
-.PHONY: app run gdb clean run-env $(QEMU_SO) commit count
+.PHONY: app run gdb clean run-env $(QEMU_SO)
 app: $(BINARY)
 
 override ARGS ?= -l $(BUILD_DIR)/nemu-log.txt
@@ -67,25 +66,19 @@ IMG :=
 NEMU_EXEC := $(BINARY) $(ARGS) $(IMG)
 
 $(BINARY): $(OBJS)
-#	$(call git_commit, "compile")
+	$(call git_commit, "compile")
 	@echo + LD $@
 	@$(LD) -O2 -rdynamic $(SO_LDLAGS) -o $@ $^ -lSDL2 -lreadline -ldl
 
 run-env: $(BINARY) $(QEMU_SO)
 
 run: run-env
-#   $(call git_commit, "run")
+	$(call git_commit, "run")
 	$(NEMU_EXEC)
 
 gdb: run-env
-#	$(call git_commit, "gdb")
+	$(call git_commit, "gdb")
 	gdb -s $(BINARY) --args $(NEMU_EXEC)
-
-commit:
-	$(call git_commit, $(msg))
-
-count:
-	@find . -name "*.[c,h]" | xargs cat | grep -v ^$$ | wc -l
 
 clean:
 	-rm -rf $(BUILD_DIR)

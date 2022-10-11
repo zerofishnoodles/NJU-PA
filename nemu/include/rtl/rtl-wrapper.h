@@ -28,7 +28,6 @@
 #define rtl_idiv64_q  concat(RTL_PREFIX, _rtl_idiv64_q)
 #define rtl_idiv64_r  concat(RTL_PREFIX, _rtl_idiv64_r)
 #define rtl_lm        concat(RTL_PREFIX, _rtl_lm      )
-#define rtl_ilm       concat(RTL_PREFIX, _rtl_ilm      )
 #define rtl_sm        concat(RTL_PREFIX, _rtl_sm      )
 #define rtl_host_lm   concat(RTL_PREFIX, _rtl_host_lm )
 #define rtl_host_sm   concat(RTL_PREFIX, _rtl_host_sm )

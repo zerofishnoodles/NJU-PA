@@ -81,13 +81,6 @@ static inline void interpret_rtl_lm(rtlreg_t *dest, const rtlreg_t* addr, int le
   *dest = vaddr_read(*addr, len);
 }
 
-static inline void interpret_rtl_ilm(rtlreg_t *dest, const rtlreg_t* addr, int len) {
-  int32_t t = vaddr_read(*addr, len);
-  t = t << (8*len);
-  t = t >> (8*len);
-  *dest = t;
-}
-
 static inline void interpret_rtl_sm(const rtlreg_t* addr, const rtlreg_t* src1, int len) {
   vaddr_write(*addr, *src1, len);
 }
@@ -137,15 +130,20 @@ void interpret_rtl_exit(int state, vaddr_t halt_pc, uint32_t halt_ret);
 
 /* RTL pseudo instructions */
 
-static void inline rtl_not(rtlreg_t *dest, const rtlreg_t* src1) {
+static inline void rtl_not(rtlreg_t *dest, const rtlreg_t* src1) {
   // dest <- ~src1
-  *dest = ~(*src1);
+  TODO();
 }
 
 static inline void rtl_sext(rtlreg_t* dest, const rtlreg_t* src1, int width) {
   // dest <- signext(src1[(width * 8 - 1) .. 0])
-  *dest = (*src1) << (32 - width * 8);
-  *dest = (*dest) >> (32 - width * 8);
+  int32_t temp=*src1;
+  if(width==1)
+    *dest=temp<<24>>24;
+  else if(width==2)
+    *dest=temp<<16>>16;
+  else
+    *dest=temp;
 }
 
 static inline void rtl_setrelopi(uint32_t relop, rtlreg_t *dest,
@@ -156,13 +154,12 @@ static inline void rtl_setrelopi(uint32_t relop, rtlreg_t *dest,
 
 static inline void rtl_msb(rtlreg_t* dest, const rtlreg_t* src1, int width) {
   // dest <- src1[width * 8 - 1]
-  *dest = ((*src1) >> (width * 8 - 1)) & 1U;
+  TODO();
 }
 
 static inline void rtl_mux(rtlreg_t* dest, const rtlreg_t* cond, const rtlreg_t* src1, const rtlreg_t* src2) {
   // dest <- (cond ? src1 : src2)
-  if(*cond) *dest = *src1;
-  else *dest = *src2;
+  TODO();
 }
 
 #include "isa/rtl.h"

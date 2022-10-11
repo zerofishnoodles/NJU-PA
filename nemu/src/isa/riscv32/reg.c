@@ -7,21 +7,23 @@ const char *regsl[] = {
   "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
 };
 
-char csr_name_[10];
-
 void isa_reg_display() {
-  for(int i=0; i<32; i++) {
-    printf("%s\t0x%x\t%d\n", regsl[i], reg_l(i), reg_l(i));
+  for(int i=0;i<32;i++){
+    printf("%s = 0x%08x\n", reg_name(i,3), reg_l(i));
   }
 }
 
 uint32_t isa_reg_str2val(const char *s, bool *success) {
-  for(int i=0; i<32; i++) {
-    if(strcmp(regsl[i], s) == 0){
-      *success = true;
+  if(strcmp(s, "pc")==0){
+    *success=true;
+    return cpu.pc;
+  }
+  for(int i=0;i<32;i++){
+    if(strcmp(s,regsl[i])==0){
+      *success=true;
       return reg_l(i);
     }
   }
-  *success = false;
+  *success=false;
   return 0;
-}
+}//比较字符串和寄存器名字，如果是该寄存器则返回这个寄存器的值

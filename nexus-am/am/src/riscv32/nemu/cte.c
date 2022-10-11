@@ -9,13 +9,36 @@ _Context* __am_irq_handle(_Context *c) {
   if (user_handler) {
     _Event ev = {0};
     switch (c->cause) {
-      case _EVENT_YIELD:
-        ev.event = _EVENT_YIELD;
+      case -1:
+        ev.event = _EVENT_YIELD; 
+        c->epc += 4;
+        break;
+      case 0:
+      case 1:
+      case 2:
+      case 3:
+      case 4:
+      case 5:
+      case 6:
+      case 7:
+      case 8:
+      case 9:
+      case 10:
+      case 11:
+      case 12:
+      case 13:
+      case 14:
+      case 15:
+      case 16:
+      case 17:
+      case 18:
+      case 19:
+        ev.event = _EVENT_SYSCALL;
         c->epc += 4;
         break;
       default: ev.event = _EVENT_ERROR; break;
     }
-
+    
     next = user_handler(ev, c);
     if (next == NULL) {
       next = c;
@@ -42,7 +65,7 @@ _Context *_kcontext(_Area stack, void (*entry)(void *), void *arg) {
 }
 
 void _yield() {
-  asm volatile("li a7, 5; ecall");
+  asm volatile("li a7, -1; ecall");
 }
 
 int _intr_read() {
