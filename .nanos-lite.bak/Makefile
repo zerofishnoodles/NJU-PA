@@ -12,6 +12,7 @@ endif
 FSIMG_PATH = $(NAVY_HOME)/fsimg
 RAMDISK_FILE = build/ramdisk.img
 
+# SINGLE_APP = $(NAVY_HOME)/tests/dummy
 SINGLE_APP = $(NAVY_HOME)/tests/hello
 SINGLE_APP_FILE = $(FSIMG_PATH)/bin/$(notdir $(SINGLE_APP))
 
