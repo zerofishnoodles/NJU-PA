@@ -71,24 +71,45 @@ size_t fs_read(int fd, void *buf, size_t len) {
   return len;
 }
 
-size_t fs_write(int fd, const void *buf, size_t len) {
-  // boundary
-  if(fd != FD_STDERR && fd != FD_STDIN && fd != FD_STDOUT){
-    if(file_table[fd].open_offset + len >= file_table[fd].size) len = file_table[fd].size - file_table[fd].open_offset;
+// size_t fs_write(int fd, const void *buf, size_t len) {
+//   // boundary
+//   if(fd != FD_STDERR && fd != FD_STDIN && fd != FD_STDOUT){
+//     if(file_table[fd].open_offset + len >= file_table[fd].size) len = file_table[fd].size - file_table[fd].open_offset;
+//   }
+//   assert(len >= 0);
+
+//   size_t offset = file_table[fd].disk_offset + file_table[fd].open_offset;
+
+//   if(file_table[fd].write != NULL) {
+//     file_table[fd].write(buf, offset, len);
+//   }else {
+//     ramdisk_write(buf, offset, len);
+//   }
+
+//   file_table[fd].open_offset += len;
+//   return len;
+// }
+
+size_t fs_write(int fd, const void *buf, size_t len){
+  size_t length=0;
+  if(fd==1||fd==2){
+    for(int i=0;i<len;i++){
+      _putc(((char *)buf)[i]);
+    }
+    length=len;
   }
-  assert(len >= 0);
-
-  size_t offset = file_table[fd].disk_offset + file_table[fd].open_offset;
-
-  if(file_table[fd].write != NULL) {
-    file_table[fd].write(buf, offset, len);
-  }else {
-    ramdisk_write(buf, offset, len);
+  if(file_table[fd].open_offset+len>=file_table[fd].size)
+    len=file_table[fd].size-file_table[fd].open_offset;
+  if(fd>2){
+    if(file_table[fd].write==NULL)
+      length=ramdisk_write(buf, file_table[fd].disk_offset + file_table[fd].open_offset, len);
+    else
+      length=file_table[fd].write(buf, file_table[fd].disk_offset + file_table[fd].open_offset, len);
+    file_table[fd].open_offset+=length;
   }
-
-  file_table[fd].open_offset += len;
-  return len;
+  return length;
 }
+
 
 size_t fs_lseek(int fd, size_t offset, int whence) {
   switch(whence){
