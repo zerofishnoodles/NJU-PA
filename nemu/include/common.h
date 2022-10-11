@@ -1,7 +1,7 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
 
-//#define DEBUG
+#define DEBUG
 //#define DIFF_TEST
 
 #if _SHARE
@@ -16,6 +16,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 typedef uint8_t bool;
