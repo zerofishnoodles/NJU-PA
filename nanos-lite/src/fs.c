@@ -73,7 +73,6 @@ size_t fs_read(int fd, void *buf, size_t len) {
 
 size_t fs_write(int fd, const void *buf, size_t len) {
   // boundary
-  printf("fd: %d", fd);
   if(fd != FD_STDERR && fd != FD_STDIN && fd != FD_STDOUT){
     if(file_table[fd].open_offset + len >= file_table[fd].size) len = file_table[fd].size - file_table[fd].open_offset;
   }
