@@ -1,5 +1,6 @@
 #include "proc.h"
 #include <elf.h>
+#include "fs.h"
 
 #ifdef __ISA_AM_NATIVE__
 # define Elf_Ehdr Elf64_Ehdr
@@ -17,17 +18,19 @@ extern size_t get_ramdisk_size();
 
 static uintptr_t loader(PCB *pcb, const char *filename) {
   Elf_Ehdr ehdr;
-  uint32_t e_offset = (uint32_t)&ramdisk_start; // assume this ELF file is at the 0 offest of the ramdisk
-  ramdisk_read(&ehdr, 0, sizeof(Elf_Ehdr));   // ramdisk_read is already add the ramdisk_start
+  int fd = fs_open(filename, 0, 0);
+  fs_lseek(fd, 0, SEEK_SET);
+  fs_read(fd, &ehdr, sizeof(ehdr));
+
   Elf_Phdr phdr;
-  for(uint32_t i = 0; i < ehdr.e_phnum; i++) {;
-    ramdisk_read(&phdr, ehdr.e_phoff + i * ehdr.e_phentsize, ehdr.e_phentsize);
+  for(uint32_t i = 0; i < ehdr.e_phnum; i++) {
+    fs_lseek(fd, ehdr.e_phoff + i * ehdr.e_phentsize, SEEK_SET);
+    fs_read(fd, &phdr, ehdr.e_phentsize);
     if(phdr.p_type == PT_LOAD) {
-      Log("%x %x %d", phdr.p_vaddr, e_offset + (void *)phdr.p_offset, phdr.p_filesz);
-      memcpy((void *)phdr.p_vaddr, e_offset + (void *)phdr.p_offset, phdr.p_filesz); // assume this ELF file is at the 0 offest of the ramdisk
-      memset((void *)(phdr.p_vaddr + phdr.p_filesz), 0, phdr.p_memsz - phdr.p_filesz);
+      fs_lseek(fd, phdr.p_offset, SEEK_SET);
+      fs_read(fd, (void*)phdr.p_vaddr, phdr.p_filesz);
+      memset((void*)(phdr.p_vaddr+phdr.p_filesz), 0, phdr.p_memsz-phdr.p_filesz);
     }
-    
   }
 
   return ehdr.e_entry;

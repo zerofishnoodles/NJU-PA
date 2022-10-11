@@ -2,7 +2,8 @@
 #include <amdev.h>
 
 size_t serial_write(const void *buf, size_t offset, size_t len) {
-  return 0;
+  for(int i=0;i<len;i++) _putc(((char *)buf)[i]);
+  return len;
 }
 
 #define NAME(key) \
@@ -14,7 +15,11 @@ static const char *keyname[256] __attribute__((used)) = {
 };
 
 size_t events_read(void *buf, size_t offset, size_t len) {
-  return 0;
+  int key = read_key();
+  int down = key&0x8000;
+  if(key != _KEY_NONE) len = sprintf(buf, "%s %s\n", down ? "kd": "ku", keyname[key]);
+  else len = sprintf(buf, "t %s\n", uptime());
+  return len;
 }
 
 static char dispinfo[128] __attribute__((used)) = {};

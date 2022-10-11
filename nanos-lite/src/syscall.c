@@ -1,5 +1,6 @@
 #include "common.h"
 #include "syscall.h"
+#include "fs.h"
 
 int32_t sys_yield() {
   _yield();
@@ -34,10 +35,22 @@ _Context* do_syscall(_Context *c) {
       _halt(a[1]);
       return c;
     case SYS_write:
-      c->GPRx = sys_write(a[1], (char *)a[2], a[3]);
+      c->GPRx = fs_write((int)a[1], (const char *)a[2], (size_t)a[3]);
       return c;
     case SYS_brk:
       c->GPRx = sys_brk((uintptr_t)a[1]);
+      return c;
+    case SYS_open:
+      c->GPRx = fs_open((const char *)a[1], (int)a[2], (int)a[3]);
+      return c;
+    case SYS_read:
+      c->GPRx = fs_read((int)a[1], (void *)a[2], (size_t)a[3]);
+      return c;
+    case SYS_close:
+      c->GPRx = fs_close((int)a[1]);
+      return c;
+    case SYS_lseek:
+      c->GPRx = fs_lseek((int)a[1], (size_t)a[2], (int)a[3]);
       return c;
     default: panic("Unhandled syscall ID = %d", a[0]);
   }

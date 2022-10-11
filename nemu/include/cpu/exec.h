@@ -44,7 +44,7 @@ static inline void idex(vaddr_t *pc, OpcodeEntry *e) {
 }
 
 static inline void update_pc(void) {
-  if (decinfo.is_jmp) { decinfo.is_jmp = 0; cpu.pc = decinfo.jmp_pc;}
+  if (decinfo.is_jmp) { decinfo.is_jmp = 0; }
   else { cpu.pc = decinfo.seq_pc; }
 }
 
@@ -68,9 +68,9 @@ void display_inv_msg(vaddr_t pc);
   print_asm(str(instr) "%c %s", suffix_char(id_dest->width), id_dest->str)
 
 #define print_asm_template2(instr) \
-  print_asm(str(instr) "%c %s,%s", suffix_char(id_dest->width), id_dest->str, id_src->str)
+  print_asm(str(instr) "%c %s,%s", suffix_char(id_dest->width), id_src->str, id_dest->str)
 
 #define print_asm_template3(instr) \
-  print_asm(str(instr) "%c %s,%s,%s", suffix_char(id_dest->width),id_dest->str, id_src->str, id_src2->str)
+  print_asm(str(instr) "%c %s,%s,%s", suffix_char(id_dest->width), id_src->str, id_src2->str, id_dest->str)
 
 #endif
