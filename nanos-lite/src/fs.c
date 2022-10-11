@@ -52,9 +52,9 @@ int fs_open(const char *pathname, int flags, int mode) {
 }
 
 size_t fs_read(int fd, void *buf, size_t len) {
-  // boundary
-  if(file_table[fd].open_offset + len >= file_table[fd].size) len = file_table[fd].size - file_table[fd].open_offset;
-
+  if(fd != FD_STDERR && fd != FD_STDIN && fd != FD_STDOUT){
+    if(file_table[fd].open_offset + len >= file_table[fd].size) len = file_table[fd].size - file_table[fd].open_offset;
+  }
   if(len < 0 ) len = 0;
 
   size_t offset = file_table[fd].disk_offset + file_table[fd].open_offset;
@@ -68,25 +68,14 @@ size_t fs_read(int fd, void *buf, size_t len) {
   file_table[fd].open_offset += len;
   return len;
 }
-// size_t fs_read(int fd, void *buf, size_t len){
-//   if(file_table[fd].open_offset+len>=file_table[fd].size)
-//     len=file_table[fd].size-file_table[fd].open_offset;
-//   if(len<0)
-//     len=0;
-//   if(file_table[fd].read==NULL)
-//     ramdisk_read(buf,file_table[fd].disk_offset+file_table[fd].open_offset,len);
-//   else
-//     len=file_table[fd].read(buf,file_table[fd].disk_offset+file_table[fd].open_offset,len);
-//   file_table[fd].open_offset+=len;
-//   return len;
-// }
+
 
 size_t fs_write(int fd, const void *buf, size_t len) {
   // boundary
   if(fd != FD_STDERR && fd != FD_STDIN && fd != FD_STDOUT){
     if(file_table[fd].open_offset + len >= file_table[fd].size) len = file_table[fd].size - file_table[fd].open_offset;
   }
-  assert(len >= 0);
+  if(len < 0 ) len = 0;
 
   size_t offset = file_table[fd].disk_offset + file_table[fd].open_offset;
 
