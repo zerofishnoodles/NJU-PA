@@ -50,47 +50,46 @@ intptr_t _syscall_(intptr_t type, intptr_t a0, intptr_t a1, intptr_t a2) {
   return ret;
 }
 
+//add sys call to the target place
+
 void _exit(int status) {
   _syscall_(SYS_exit, status, 0, 0);
   while (1);
 }
 
 int _open(const char *path, int flags, mode_t mode) {
-  int ret = _syscall_(SYS_open, (intptr_t)path, (intptr_t)flags, (intptr_t)mode);
-  return ret;
+  int res=_syscall_(SYS_open,(uintptr_t)path,flags,mode);
+  return res;
 }
 
-int _write(int fd, const void *buf, size_t count) {
-  size_t ret=_syscall_(SYS_write,(intptr_t)fd, (intptr_t)buf, (intptr_t)count);
-  return ret;
+int _write(int fd, void *buf, size_t count) {
+  int res=_syscall_(SYS_write,fd,(intptr_t)buf,count);
+  return res;
 }
 
 void *_sbrk(intptr_t increment) {
-  static char *pb;
-  if(pb == 0) pb = &_end;  // first init
-  char *ori_pb = pb;
-  int ret = _syscall_(SYS_brk, (intptr_t)(ori_pb + increment), 0, 0);
-  if(ret == 0) {
-    pb += increment;
-    return (void *)ori_pb;
+  static void* program_break=(uintptr_t)&_end;
+  void* old=program_break;
+  if(_syscall_(SYS_brk,(uintptr_t)program_break+increment,0,0)==0){
+    program_break+=increment;
+    return(void*)old;
   }
-  else return (void *)-1;
+  return (void *)-1;
 }
 
 int _read(int fd, void *buf, size_t count) {
-  size_t ret = _syscall_(SYS_read, (intptr_t)fd, (intptr_t)buf, (intptr_t)count);
-  return ret;
+  int res=_syscall_(SYS_read,fd,(uintptr_t)buf,count);
+  return res;
 }
 
 int _close(int fd) {
-  int ret = _syscall_(SYS_close, (intptr_t)fd, 0, 0);
-  assert(ret == 0);
-  return 0;
+  int res=_syscall_(SYS_close,fd,0,0);
+  return res;
 }
 
 off_t _lseek(int fd, off_t offset, int whence) {
-  off_t ret = _syscall_(SYS_lseek, (intptr_t)fd, (intptr_t)offset, (intptr_t)whence);
-  return ret;
+  off_t res=_syscall_(SYS_lseek,fd,offset,whence);
+  return res;
 }
 
 int _execve(const char *fname, char * const argv[], char *const envp[]) {
@@ -100,6 +99,7 @@ int _execve(const char *fname, char * const argv[], char *const envp[]) {
 
 // The code below is not used by Nanos-lite.
 // But to pass linking, they are defined as dummy functions
+
 
 int _fstat(int fd, struct stat *buf) {
   return 0;
