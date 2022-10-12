@@ -8,10 +8,7 @@
 #include <readline/history.h>
 
 void cpu_exec(uint64_t);
-void isa_reg_display();
-void print_wp();
-void free_wp(int NO);
-WP* new_wp();
+void isa_reg_display(void);
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -42,74 +39,65 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
-static int cmd_si(char*args){
-  int num=1;
-  if(!(args==NULL))
-    num=atoi(args);
-  cpu_exec(num);
+static int cmd_si(char *args) {
+  char *ptr;
+  uint64_t step_num = strtoul(args, &ptr, 10);
+  cpu_exec(step_num);
   return 0;
 }
 
-static int cmd_info(char *args){
-  if(args!=NULL && args[0] == 'r')
+static int cmd_info(char *args) {
+  if(strcmp(args, "r") == 0) {
     isa_reg_display();
-  else if(args!=NULL && args[0] == 'w')
-    print_wp();
+    return 0;
+  }else if(strcmp(args, "w") == 0) {
+    WP* cur = get_head();
+    while(cur) {
+      printf("watchpoint %d: %s\n", cur->NO, cur->str);
+      cur = cur->next;
+    }
+    return 0;
+  }
+  return -1;
+}
+
+static int cmd_x(char *args) {
+  char *token1 = strtok(args, " ");
+  char *token2 = strtok(NULL, " ");
+  char *ptr1, *ptr2;
+  // for now it only accept fixed hex address instead of an expr
+  int num_bytes = strtoul(token1, &ptr1, 10);
+  vaddr_t addr = strtoul(token2+2, &ptr2, 16);
+  for(int i=0;i<num_bytes;i++) {
+    printf("0x%08x ", vaddr_read(addr+i*4, 4));
+  }
   return 0;
 }
 
-static int cmd_x(char *args){
-  int num;
-  vaddr_t addr;
-  char* temp;
-  if(args==NULL){
-    return -1;
-  }
-  char *token=strtok(args," ");
-  num=atoi(token);
-  token=strtok(NULL, " ");
-  if(token==NULL){
-    return -1;
-  }
-  addr=strtol(token,&temp,16);
-  for(int i=0;i<num;i++){
-    printf("0x%08x 0x%08x\n", addr+i*4,vaddr_read(addr+i*4,4));
-  }
-  return 0;
-}
-
-static int cmd_p(char *args){
-  bool success=true;
+static int cmd_watch(char *args) {
+  bool success;
   uint32_t res = expr(args, &success);
-  if(!success){
-    printf("Expression Wrong!\n");
-    return -1;
-  }
-  printf("%d\n", res);
+  if(success == false) panic("expr wrong!");
+  WP* wp = new_wp();
+  wp->res = res;
+  strcpy(wp->str, args);
+  printf("Set watchpoint %d: %s\n", wp->NO, wp->str);
   return 0;
 }
 
-static int cmd_w(char *args){
-  bool success=true;
-  uint32_t res=expr(args, &success);
-  if(!success){
-    printf("Expression Wrong\n");
-    return -1;
+static int cmd_d(char *args) {
+  int wp_no = strtol(args, NULL, 10);
+  WP* cur = get_head();
+  int flag = -1;
+  while(cur) {
+    if(cur->NO == wp_no){
+      free_wp(cur);
+      flag = 0;
+    }
+    cur = cur -> next;
   }
-  WP *new=new_wp();
-  new->value=res;
-  strcpy(new->str,args);
-  printf("Set Watchpoint Succeed\n");
-  return 0;
-}
-
-static int cmd_d(char *args){
-  if(args==NULL)
-    return -1;
-  int num=atoi(args);
-  free_wp(num);
-  printf("Delete No.%d Watchpoint~\n", num);
-  return 0;
+  if(flag == 0) printf("delete watchpoint %d\n", wp_no);
+  return flag;
 }
 
 static struct {
@@ -120,13 +108,13 @@ static struct {
   { "help", "Display informations about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-  { "si", "Single Step Execute", cmd_si},
-  { "info", "Print details of register || watchpoint", cmd_info},
-  { "x", "Scan memory", cmd_x},
-  { "p", "Expression Evaluation", cmd_p},
-  { "w", "Set a New Watchpoint", cmd_w},
-  { "d", "Delete Watchpoint", cmd_d}
+
   /* TODO: Add more commands */
+  { "si", "step into [N] steps of the program", cmd_si },
+  { "info", "get the info of [arg]", cmd_info},
+  { "x", "dispaly the [N] bytes content of the address [expr]", cmd_x},
+  { "w", "set watchpoint of an [expr]", cmd_watch},
+  { "d", "delete watchpoint of [NO]", cmd_d},
 
 };
 
