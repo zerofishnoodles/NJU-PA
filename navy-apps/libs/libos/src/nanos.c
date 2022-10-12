@@ -6,8 +6,6 @@
 #include <time.h>
 #include "syscall.h"
 
-extern uint32_t end;
-
 // helper macros
 #define _concat(x, y) x ## y
 #define concat(x, y) _concat(x, y)
@@ -40,6 +38,8 @@ extern uint32_t end;
 #error syscall is not supported
 #endif
 
+extern char _end;
+
 intptr_t _syscall_(intptr_t type, intptr_t a0, intptr_t a1, intptr_t a2) {
   register intptr_t _gpr1 asm (GPR1) = type;
   register intptr_t _gpr2 asm (GPR2) = a0;
@@ -56,51 +56,46 @@ void _exit(int status) {
 }
 
 int _open(const char *path, int flags, mode_t mode) {
-  int ret = _syscall_(SYS_open, (intptr_t)path, flags, mode);
+  int ret = _syscall_(SYS_open, (intptr_t)path, (intptr_t)flags, (intptr_t)mode);
   return ret;
 }
 
-int _write(int fd, void *buf, size_t count) {
-  int ret = _syscall_(SYS_write, fd, (intptr_t)buf, count);
-  //_exit(SYS_write);
+int _write(int fd, const void *buf, size_t count) {
+  size_t ret=_syscall_(SYS_write,(intptr_t)fd, (intptr_t)buf, (intptr_t)count);
   return ret;
 }
 
 void *_sbrk(intptr_t increment) {
-  extern uint32_t _end;
-  static uint32_t programBrk = 0;
-  if (programBrk == 0) {
-    programBrk = &_end;
-    _syscall_(SYS_brk, programBrk, 0, 0);
+  static char *pb;
+  if(pb == 0) pb = &_end;  // first init
+  char *ori_pb = pb;
+  int ret = _syscall_(SYS_brk, (intptr_t)(ori_pb + increment), 0, 0);
+  if(ret == 0) {
+    pb += increment;
+    return (void *)ori_pb;
   }
-  if (_syscall_(SYS_brk, programBrk + increment, 0, 0) == 0) {
-    uint32_t old_break = programBrk;
-    programBrk += increment;
-    return (void *)old_break;
-  } else {
-    return (void *)-1;
-  }
+  else return (void *)-1;
 }
 
 int _read(int fd, void *buf, size_t count) {
-  int ret = _syscall_(SYS_read, fd, (intptr_t)buf, count);
+  size_t ret = _syscall_(SYS_read, (intptr_t)fd, (intptr_t)buf, (intptr_t)count);
   return ret;
 }
 
 int _close(int fd) {
-  int ret = _syscall_(SYS_close, fd, 0, 0);
-  return ret;
+  int ret = _syscall_(SYS_close, (intptr_t)fd, 0, 0);
+  assert(ret == 0);
+  return 0;
 }
 
 off_t _lseek(int fd, off_t offset, int whence) {
-  off_t ret = _syscall_(SYS_lseek, fd, (intptr_t)offset, whence);
+  off_t ret = _syscall_(SYS_lseek, (intptr_t)fd, (intptr_t)offset, (intptr_t)whence);
   return ret;
 }
 
 int _execve(const char *fname, char * const argv[], char *const envp[]) {
-  //_exit(SYS_execve);
-  int ret = _syscall_(SYS_execve, fname, (intptr_t)argv, (intptr_t)envp);
-  return ret;
+  _exit(SYS_execve);
+  return 0;
 }
 
 // The code below is not used by Nanos-lite.
