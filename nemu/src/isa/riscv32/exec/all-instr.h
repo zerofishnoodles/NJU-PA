@@ -1,53 +1,51 @@
 #include "cpu/exec.h"
 
-make_EHelper(lui);
-
-make_EHelper(ld);
-make_EHelper(ild);
-make_EHelper(st);
-
 make_EHelper(inv);
 make_EHelper(nemu_trap);
 
+/* U-type */
+make_EHelper(lui);
 make_EHelper(auipc);
+
+/* J-type */
 make_EHelper(jal);
 make_EHelper(jalr);
 
+/* B-type */
+make_EHelper(br);
+
 make_EHelper(beq);
 make_EHelper(bne);
-make_EHelper(bge);
 make_EHelper(blt);
+make_EHelper(bge);
 make_EHelper(bltu);
 make_EHelper(bgeu);
 
-make_EHelper(add);
-make_EHelper(sub);
-make_EHelper(sll);
-make_EHelper(slt);
-make_EHelper(sltu);
-make_EHelper(xor);
-make_EHelper(srl);
-make_EHelper(sra);
-make_EHelper(or);
-make_EHelper(and);
-make_EHelper(div);
-make_EHelper(divu);
-make_EHelper(mul);
-make_EHelper(mulh);
-make_EHelper(rem);
-make_EHelper(remu);
+/* load instruction */
+make_EHelper(ld);
+make_EHelper(lh);
+make_EHelper(lb);
+make_EHelper(st);
 
-make_EHelper(addi);
-make_EHelper(slli);
-make_EHelper(slti);
-make_EHelper(sltiu);
-make_EHelper(xori);
-make_EHelper(srli);
-make_EHelper(srai);
-make_EHelper(ori);
-make_EHelper(andi);
+/* I-type */
+make_EHelper(addi);     /* 000 */
+make_EHelper(slli);     /* 001 */
+make_EHelper(slti);     /* 010 */ 
+make_EHelper(sltiu);    /* 011 */
+make_EHelper(xori);     /* 100 */
+make_EHelper(srli_srai);/* 101 */
+make_EHelper(ori);      /* 110 */
+make_EHelper(andi);     /* 111 */
 
-make_EHelper(ecall);
-make_EHelper(csrrs);
-make_EHelper(csrrw);
-make_EHelper(sret);
+/* R-type */
+make_EHelper(sub_add);
+make_EHelper(sll);     /* 001 */
+make_EHelper(slt);     /* 010 */ 
+make_EHelper(sltu);    /* 011 */
+make_EHelper(xor);     /* 100 */
+make_EHelper(srl_sra);/* 101 */
+make_EHelper(or);      /* 110 */
+make_EHelper(and);     /* 111 */
+
+/* system */
+make_EHelper(system);

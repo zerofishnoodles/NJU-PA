@@ -8,7 +8,7 @@
 
 extern rtlreg_t s0, s1, t0, t1, ir;
 
-void decinfo_set_jmp(bool is_jmp, vaddr_t target);
+void decinfo_set_jmp(bool is_jmp);
 bool interpret_relop(uint32_t relop, const rtlreg_t src1, const rtlreg_t src2);
 
 /* RTL basic instructions */
@@ -42,6 +42,7 @@ make_rtl_arith_logic(shr)
 make_rtl_arith_logic(sar)
 make_rtl_arith_logic(mul_lo)
 make_rtl_arith_logic(mul_hi)
+make_rtl_arith_logic(mul_hsu)
 make_rtl_arith_logic(imul_lo)
 make_rtl_arith_logic(imul_hi)
 make_rtl_arith_logic(div_q)
@@ -81,13 +82,6 @@ static inline void interpret_rtl_lm(rtlreg_t *dest, const rtlreg_t* addr, int le
   *dest = vaddr_read(*addr, len);
 }
 
-static inline void interpret_rtl_ilm(rtlreg_t *dest, const rtlreg_t* addr, int len) {
-  int32_t t = vaddr_read(*addr, len);
-  t = t << (8*len);
-  t = t >> (8*len);
-  *dest = t;
-}
-
 static inline void interpret_rtl_sm(const rtlreg_t* addr, const rtlreg_t* src1, int len) {
   vaddr_write(*addr, *src1, len);
 }
@@ -116,17 +110,20 @@ static inline void interpret_rtl_setrelop(uint32_t relop, rtlreg_t *dest,
 }
 
 static inline void interpret_rtl_j(vaddr_t target) {
-  decinfo_set_jmp(true, target);
+  cpu.pc = target;
+  decinfo_set_jmp(true);
 }
 
 static inline void interpret_rtl_jr(rtlreg_t *target) {
-  decinfo_set_jmp(true, *target);
+  cpu.pc = *target;
+  decinfo_set_jmp(true);
 }
 
 static inline void interpret_rtl_jrelop(uint32_t relop,
     const rtlreg_t *src1, const rtlreg_t *src2, vaddr_t target) {
   bool is_jmp = interpret_relop(relop, *src1, *src2);
-  if (is_jmp) decinfo_set_jmp(is_jmp, target);
+  if (is_jmp) cpu.pc = target;
+  decinfo_set_jmp(is_jmp);
 }
 
 void interpret_rtl_exit(int state, vaddr_t halt_pc, uint32_t halt_ret);
@@ -134,15 +131,67 @@ void interpret_rtl_exit(int state, vaddr_t halt_pc, uint32_t halt_ret);
 
 /* RTL pseudo instructions */
 
-static void inline rtl_not(rtlreg_t *dest, const rtlreg_t* src1) {
+static inline void rtl_not(rtlreg_t *dest, const rtlreg_t* src1) {
   // dest <- ~src1
-  *dest = ~(*src1);
+  *dest = ~(*dest);
+}
+
+static inline void rtl_msb(rtlreg_t* dest, const rtlreg_t* src1, int width) {
+  // dest <- src1[width * 8 - 1]
+  switch (width) {
+		case 1: *dest = ((*src1 & 0x00000080) > 0);break;
+		case 2: *dest = ((*src1 & 0x00008000) > 0);break;
+		case 4: *dest = ((*src1 & 0x80000000) > 0);break;
+	}
 }
 
 static inline void rtl_sext(rtlreg_t* dest, const rtlreg_t* src1, int width) {
   // dest <- signext(src1[(width * 8 - 1) .. 0])
-  *dest = (*src1) << (32 - width * 8);
-  *dest = (*dest) >> (32 - width * 8);
+/*
+  rtlreg_t msb = 0;
+  rtl_msb(&msb, src1, width);
+  if (msb)
+    switch (width) {
+      case 1:{
+        *dest = 0xffffff00 | *src1;
+        break;
+      }
+      case 2:{
+        *dest = 0xffff0000 | *src1;
+        break;
+      }
+      case 4:{
+        *dest = 0x00000000 | *src1;
+        break;
+      }
+    }
+  else
+  {
+    switch (width) {
+      case 1:{
+        *dest = 0x000000ff & *src1;
+        break;
+      }
+      case 2:{
+        *dest = 0x0000ffff & *src1;
+        break;
+      }
+      case 4:{
+        *dest = *src1;
+        break;
+      }
+    }
+  }
+*/
+
+  int32_t temp = *src1;
+  switch(width) {
+    case 4: *dest = *src1; return;
+    case 3: temp = temp <<  8; *dest = temp >>  8; return; 
+    case 2: temp = temp << 16; *dest = temp >> 16; return; 
+    case 1: temp = temp << 24; *dest = temp >> 24; return;
+    default: assert(0);
+  }  
 }
 
 static inline void rtl_setrelopi(uint32_t relop, rtlreg_t *dest,
@@ -151,15 +200,9 @@ static inline void rtl_setrelopi(uint32_t relop, rtlreg_t *dest,
   rtl_setrelop(relop, dest, src1, &ir);
 }
 
-static inline void rtl_msb(rtlreg_t* dest, const rtlreg_t* src1, int width) {
-  // dest <- src1[width * 8 - 1]
-  *dest = ((*src1) >> (width * 8 - 1)) & 1U;
-}
-
 static inline void rtl_mux(rtlreg_t* dest, const rtlreg_t* cond, const rtlreg_t* src1, const rtlreg_t* src2) {
   // dest <- (cond ? src1 : src2)
-  if(*cond) *dest = *src1;
-  else *dest = *src2;
+  *dest = *cond > 0 ? *src1 : *src2;
 }
 
 #include "isa/rtl.h"

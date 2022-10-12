@@ -1,6 +1,5 @@
 #include <am.h>
 #include <riscv32.h>
-#include "klib.h"
 
 static _Context* (*user_handler)(_Event, _Context*) = NULL;
 
@@ -10,33 +9,22 @@ _Context* __am_irq_handle(_Context *c) {
     _Event ev = {0};
     switch (c->cause) {
       case -1:
-        ev.event = _EVENT_YIELD; 
-        break;
+          ev.event = _EVENT_YIELD;
+          break;
       case 0:
       case 1:
       case 2:
       case 3:
       case 4:
-      case 5:
-      case 6:
       case 7:
       case 8:
       case 9:
-      case 10:
-      case 11:
-      case 12:
       case 13:
-      case 14:
-      case 15:
-      case 16:
-      case 17:
-      case 18:
-      case 19:
-        ev.event = _EVENT_SYSCALL;
-        break;
+          ev.event = _EVENT_SYSCALL;
+          break;
       default: ev.event = _EVENT_ERROR; break;
     }
-    
+
     next = user_handler(ev, c);
     if (next == NULL) {
       next = c;
@@ -59,7 +47,12 @@ int _cte_init(_Context*(*handler)(_Event, _Context*)) {
 }
 
 _Context *_kcontext(_Area stack, void (*entry)(void *), void *arg) {
-  return NULL;
+  _Context *context = stack.end - sizeof(_Context);
+  memset(context, 0x00, sizeof(_Context));
+  context->epc = (uint32_t)entry;
+  context->as = NULL;
+
+  return context;
 }
 
 void _yield() {
@@ -72,4 +65,3 @@ int _intr_read() {
 
 void _intr_write(int enable) {
 }
-

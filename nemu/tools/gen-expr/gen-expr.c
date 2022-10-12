@@ -5,64 +5,79 @@
 #include <assert.h>
 #include <string.h>
 
+#define NR_TOKENS 32
 // this should be enough
 static char buf[65536];
-static int buf_num;
+static int strSub =0;
+static int nr_tokens = 0;
 
-static void gen(char c) {
-  buf[buf_num++] = c;
+static inline uint32_t choose(uint32_t n){
+	return rand() % n ;
 }
-static void gen_num(void) {
-  for(int i=0;i < 1+rand()%3; i++){
-    if(i==0) {
-      buf[buf_num++] = '0'+1+rand()%2;
-    }else{
-      buf[buf_num++] = '0'+rand()%10;
-    }
+
+static inline void gen_num()
+{
+  uint32_t num =rand()%1000;
+  char buffer[40];
+  snprintf(buffer,sizeof(buffer),"%d",num);
+  int len = strlen(buffer);
+  strcpy(&buf[strSub],buffer);
+  strSub+=len;
+  nr_tokens++;
+  return ;
+}
+static inline void gen(char c)
+{
+  if(c=='('){
+  	buf[strSub] = '(';
+	}
+  if(c==')'){
+  	buf[strSub] = ')';
+	}
+  strSub++;
+  nr_tokens++;
+  return ;
+}
+
+static inline void gen_rand_op(){
+  switch (choose(4)){
+    case 0 : buf[strSub]='+';break;
+    case 1 : buf[strSub]='-';break;
+    case 2 : buf[strSub]='*';break;
+    case 3 : buf[strSub]='/';break;
   }
+  strSub++;
+  nr_tokens++;
+  return;
 }
-
-static void gen_rand_op(void) {
-  switch (rand()%4)
-  {
-  case 0:
-    buf[buf_num++] = '+';
-    break;
-  case 1:
-    buf[buf_num++] = '-';
-    break;
-  case 2:
-    buf[buf_num++] = '*';
-    break;
-  // division will be zero
-  case 3:
-    buf[buf_num++] = '/';
-    break;
-  default:
-    break;
-  }
-}
-
 static inline void gen_rand_expr() {
-  if(buf_num > 65535){
-    printf("expr too long!");
-    exit(0);
-  }  
-  switch (rand()%3) {
-    case 0: gen_num(); break;
-    case 1: gen('('); gen_rand_expr(); gen(')'); break;
-    default: gen_rand_expr(); gen_rand_op(); gen_rand_expr(); break;
+  switch (choose(3)){
+    case 0 :
+    if(nr_tokens+1>=NR_TOKENS)
+      break;
+    gen_num();break;
+    case 1 : 
+    if(nr_tokens+3>=NR_TOKENS)
+      break;
+    gen('(');gen_rand_expr();gen(')');break;
+    default: 
+    if(nr_tokens+3>=NR_TOKENS)
+      break;
+    gen_rand_expr();gen_rand_op();gen_rand_expr();break;
+  }
+  switch (choose(2)){
+		case 1:
+    if(nr_tokens+1>=NR_TOKENS)
+      break;
+    buf[strSub]=' ';strSub++;nr_tokens++;break;
+    default: break;
   }
 }
 
 static char code_buf[65536];
 static char *code_format =
 "#include <stdio.h>\n"
-"#include <signal.h>\n"
-"#include <stdlib.h>\n"
-"void handler(int s) {exit(1);}"
 "int main() { "
-"  signal(SIGFPE, handler);"
 "  unsigned result = %s; "
 "  printf(\"%%u\", result); "
 "  return 0; "
@@ -76,10 +91,10 @@ int main(int argc, char *argv[]) {
     sscanf(argv[1], "%d", &loop);
   }
   int i;
-  buf_num = 0;
   for (i = 0; i < loop; i ++) {
-    memset(buf, 0, 65536);
-    buf_num = 0;
+		strSub=0;
+    nr_tokens=0;
+		memset(buf,0,sizeof(buf));
     gen_rand_expr();
 
     sprintf(code_buf, code_format, buf);
@@ -97,9 +112,7 @@ int main(int argc, char *argv[]) {
 
     int result;
     fscanf(fp, "%d", &result);
-    ret = pclose(fp);
-    if(WEXITSTATUS(ret) == 1) continue;
-
+    pclose(fp);
 
     printf("%u %s\n", result, buf);
   }

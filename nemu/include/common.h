@@ -16,8 +16,6 @@
 #include <stdint.h>
 #include <assert.h>
 #include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 typedef uint8_t bool;
 

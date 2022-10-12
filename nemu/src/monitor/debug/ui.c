@@ -8,7 +8,9 @@
 #include <readline/history.h>
 
 void cpu_exec(uint64_t);
-void isa_reg_display(void);
+
+void isa_reg_display();
+void watchpoints_display();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -38,67 +40,12 @@ static int cmd_q(char *args) {
 }
 
 static int cmd_help(char *args);
-
-static int cmd_si(char *args) {
-  char *ptr;
-  uint64_t step_num = strtoul(args, &ptr, 10);
-  cpu_exec(step_num);
-  return 0;
-}
-
-static int cmd_info(char *args) {
-  if(strcmp(args, "r") == 0) {
-    isa_reg_display();
-    return 0;
-  }else if(strcmp(args, "w") == 0) {
-    WP* cur = get_head();
-    while(cur) {
-      printf("watchpoint %d: %s\n", cur->NO, cur->str);
-      cur = cur->next;
-    }
-    return 0;
-  }
-  return -1;
-}
-
-static int cmd_x(char *args) {
-  char *token1 = strtok(args, " ");
-  char *token2 = strtok(NULL, " ");
-  char *ptr1, *ptr2;
-  // for now it only accept fixed hex address instead of an expr
-  int num_bytes = strtoul(token1, &ptr1, 10);
-  vaddr_t addr = strtoul(token2+2, &ptr2, 16);
-  for(int i=0;i<num_bytes;i++) {
-    printf("0x%08x ", vaddr_read(addr+i*4, 4));
-  }
-  return 0;
-}
-
-static int cmd_watch(char *args) {
-  bool success;
-  uint32_t res = expr(args, &success);
-  if(success == false) panic("expr wrong!");
-  WP* wp = new_wp();
-  wp->res = res;
-  strcpy(wp->str, args);
-  printf("Set watchpoint %d: %s\n", wp->NO, wp->str);
-  return 0;
-}
-
-static int cmd_d(char *args) {
-  int wp_no = strtol(args, NULL, 10);
-  WP* cur = get_head();
-  int flag = -1;
-  while(cur) {
-    if(cur->NO == wp_no){
-      free_wp(cur);
-      flag = 0;
-    }
-    cur = cur -> next;
-  }
-  if(flag == 0) printf("delete watchpoint %d\n", wp_no);
-  return flag;
-}
+static int cmd_si(char *args);
+static int cmd_info(char *args);
+static int cmd_exp(char *args);
+static int cmd_scan(char *args);
+static int cmd_setWatchPoints(char *args);
+static int cmd_deleteWatchPoints(char *args);
 
 static struct {
   char *name;
@@ -110,12 +57,12 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
 
   /* TODO: Add more commands */
-  { "si", "step into [N] steps of the program", cmd_si },
-  { "info", "get the info of [arg]", cmd_info},
-  { "x", "dispaly the [N] bytes content of the address [expr]", cmd_x},
-  { "w", "set watchpoint of an [expr]", cmd_watch},
-  { "d", "delete watchpoint of [NO]", cmd_d},
-
+	{ "si", "si [N] - run N steps and stop", cmd_si },
+	{ "info", "info SUBCMD - print reg state & watchpoint info", cmd_info},
+	{ "p", "p EXPR - get expression value", cmd_exp},
+	{ "x", "x N EXPR - get expression value and set it as start memory address, then output N characters consequently", cmd_scan},
+	{ "w", "w EXPR - setWatchPoint", cmd_setWatchPoints},
+	{ "d", "d N - deleteWatchPoint", cmd_deleteWatchPoints}
 };
 
 #define NR_CMD (sizeof(cmd_table) / sizeof(cmd_table[0]))
@@ -142,6 +89,87 @@ static int cmd_help(char *args) {
   }
   return 0;
 }
+
+static int cmd_si(char *args){
+	char *arg = strtok(NULL, " ");
+
+	if (arg == NULL){
+		cpu_exec(1);
+	}else{
+		int n = 0;
+		for (int i=0; i<strlen(args); i++){
+			n = args[i] + n * 10;
+		}
+		cpu_exec(n);
+	}
+	return 0;
+}
+
+static int cmd_info(char *args){
+	char *arg = strtok(NULL, " ");
+
+	if(arg == NULL){
+		return 0;
+	}else if(strcmp(arg, "r") == 0){
+		isa_reg_display();
+	}else if(strcmp(arg, "w") == 0){
+		watchpoints_display();
+	}
+	return 0;
+}
+
+static int cmd_exp(char *args){
+	if(args == NULL){
+		return 0;
+	}
+	bool success = true;
+	uint32_t result = expr(args, &success);
+	if(success){
+    printf("\033[0;32m %s = %d(%#x) \033[0m;\n",args,result,result);
+	}
+  return 0;
+}
+
+static int cmd_setWatchPoints(char *args){
+	if(args == NULL){
+		return 0;
+	}
+	printf("%s", args);
+	WP* wp = new_wp();
+	strcpy(wp->exp, args);
+	bool success = true;
+	wp->old_value = expr(wp->exp, &success);
+	if(!true){
+		return -1;
+	}
+	printf("NO.%d watchpoint is setted.\n", wp->NO);
+	return 0;
+}
+
+static int cmd_deleteWatchPoints(char *args){
+	char *arg = strtok(NULL, " ");
+
+	if(arg == NULL){
+		return 0;
+	}
+	bool success = true;
+	int n = expr(arg, &success);
+	if(!success){
+		printf("exp wrong!\n");
+	}
+	free_wp(n);
+	return 0;
+}
+
+static int cmd_scan(char *args){
+	bool success = true;
+	uint32_t result = expr(args, &success);
+	if(success){
+    printf("\033[0;32m %s = %d(%#x) \033[0m;\n",args,result,result);
+	}
+  return 0;
+}
+
 
 void ui_mainloop(int is_batch_mode) {
   if (is_batch_mode) {
