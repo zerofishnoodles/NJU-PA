@@ -15,8 +15,7 @@ bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
   return true;
 }
 
-void isa_difftest_attach(void) {
-  // ref_difftest_init();
+void isa_difftest_attach(long img_size) {
   // ref_difftest_memcpy_from_dut(PC_START, guest_to_host(IMAGE_START), img_size);
   // char *mainargs = guest_to_host(0);
   // ref_difftest_memcpy_from_dut(PC_START - IMAGE_START, mainargs, strlen(mainargs) + 1);

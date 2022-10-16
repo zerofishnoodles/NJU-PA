@@ -32,8 +32,10 @@ _Context* do_syscall(_Context *c) {
       c->GPRx = sys_yield();
       return c;
     case SYS_exit:
-      _halt(a[1]);
-      // naive_uload(NULL,"/bin/init");
+      // _halt(a[1]);
+      printf("here\n");
+      naive_uload(NULL,"/bin/init");
+      c->GPRx = 0;
       return c;
     case SYS_write:
       c->GPRx = fs_write((int)a[1], (const char *)a[2], (size_t)a[3]);

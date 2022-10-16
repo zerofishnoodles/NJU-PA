@@ -51,7 +51,7 @@ static Finfo file_table[] __attribute__((used)) = {
 
 int fs_open(const char *pathname, int flags, int mode) {
   // omit flags and mode 
-
+  // Log("open file %s", pathname);
   for(int i=0; i<NR_FILES; i++) {
     if(strcmp(pathname, file_table[i].name) == 0) return i;
   }
@@ -82,6 +82,7 @@ size_t fs_read(int fd, void *buf, size_t len) {
 
 size_t fs_write(int fd, const void *buf, size_t len) {
   // boundary
+  // Log("write: fd:%d buf: %x  len : %d", fd, buf, len);
   if(fd != FD_STDERR && fd != FD_STDIN && fd != FD_STDOUT){
     if(file_table[fd].open_offset + len >= file_table[fd].size) len = file_table[fd].size - file_table[fd].open_offset;
   }
@@ -118,7 +119,8 @@ size_t fs_lseek(int fd, size_t offset, int whence) {
   return file_table[fd].open_offset;
 }
 
-int fs_close(int fd) {
+int fs_close(int fd){
+  file_table[fd].open_offset = 0;
   return 0;
 }
 

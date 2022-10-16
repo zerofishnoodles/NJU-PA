@@ -14,6 +14,7 @@ static char *log_file = NULL;
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
 static int is_batch_mode = false;
+// static long img_size;
 
 static inline void welcome() {
 #ifdef DEBUG
