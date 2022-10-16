@@ -17,9 +17,9 @@ typedef struct {
   char *name;
   size_t size;
   size_t disk_offset;
+  size_t open_offset;  // 文件被打开之后的读写指针
   ReadFn read;
   WriteFn write;
-  size_t open_offset;  // 文件被打开之后的读写指针
 } Finfo;
 
 enum {FD_STDIN, FD_STDOUT, FD_STDERR, FD_FB};
@@ -36,13 +36,14 @@ size_t invalid_write(const void *buf, size_t offset, size_t len) {
 
 /* This is the information about all files in disk. */
 static Finfo file_table[] __attribute__((used)) = {
-  {"stdin", 0, 0, invalid_read, invalid_write},
-  {"stdout", 0, 0, invalid_read, serial_write},
-  {"stderr", 0, 0, invalid_read, serial_write},
-  {"/dev/fb", 0, 0, invalid_read, fb_write},
-  {"/dev/events", 0, 0, events_read, invalid_write},
-  {"/dev/fbsync", 0,0, invalid_read, fbsync_write},
-  {"/proc/dispinfo", 128, 0, dispinfo_read, invalid_write},
+  {"stdin", 0, 0,0, invalid_read, invalid_write},
+  {"stdout", 0, 0,0, invalid_read, serial_write},
+  {"stderr", 0, 0,0, invalid_read, serial_write},
+  {"/dev/fb", 0, 0,0, invalid_read, fb_write},
+  {"/dev/events", 0, 0,0, events_read, invalid_write},
+  {"/dev/fbsync", 0,0,0, invalid_read, fbsync_write},
+  {"/proc/dispinfo", 128, 0, 0,dispinfo_read, invalid_write},
+  {"/dev/tty", 0, 0,0, invalid_read, serial_write},
 #include "files.h"
 };
 
@@ -60,6 +61,7 @@ int fs_open(const char *pathname, int flags, int mode) {
 }
 
 size_t fs_read(int fd, void *buf, size_t len) {
+  // Log("read: fd:%d buf: %x  len : %d", fd, buf, len);
   if(fd != FD_STDERR && fd != FD_STDIN && fd != FD_STDOUT){
     if(file_table[fd].open_offset + len >= file_table[fd].size) len = file_table[fd].size - file_table[fd].open_offset;
   }

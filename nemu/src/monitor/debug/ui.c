@@ -9,6 +9,8 @@
 
 void cpu_exec(uint64_t);
 void isa_reg_display(void);
+extern void difftest_attach();
+extern void difftest_detach();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -100,6 +102,19 @@ static int cmd_d(char *args) {
   return flag;
 }
 
+static int cmd_attach(char *args) {
+  difftest_attach();
+  printf("attach to qemu for diff-test\n");
+  return 0;
+}
+
+static int cmd_detach(char *args) {
+  difftest_detach();
+  printf("detach from qemu for diff-test\n");
+  return 0;
+} 
+
+
 static struct {
   char *name;
   char *description;
@@ -115,6 +130,8 @@ static struct {
   { "x", "dispaly the [N] bytes content of the address [expr]", cmd_x},
   { "w", "set watchpoint of an [expr]", cmd_watch},
   { "d", "delete watchpoint of [NO]", cmd_d},
+  { "attach", "attach to the qemu for diff-test", cmd_attach},
+  { "detach", "detach from the qemu for diff-test", cmd_detach},
 
 };
 
