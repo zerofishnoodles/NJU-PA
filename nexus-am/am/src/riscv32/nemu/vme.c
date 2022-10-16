@@ -1,6 +1,7 @@
 #include <am.h>
 #include <riscv32.h>
 #include <nemu.h>
+#include "klib.h"
 
 #define PG_ALIGN __attribute((aligned(PGSIZE)))
 
@@ -86,5 +87,9 @@ int _map(_AddressSpace *as, void *va, void *pa, int prot) {
 }
 
 _Context *_ucontext(_AddressSpace *as, _Area ustack, _Area kstack, void *entry, void *args) {
-  return NULL;
+  _Context *new_ctx = ustack.end - 3 * sizeof(uint32_t) - sizeof(_Context);  // there are 3 args of _start
+  memset(new_ctx, 0, sizeof(_Context) + 3 * sizeof(uint32_t));
+
+  new_ctx->epc = entry;
+  return new_ctx;
 }
