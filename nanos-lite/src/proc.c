@@ -32,7 +32,7 @@ void init_proc() {
   // context_kload(&pcb[0], (void *)hello_fun);
   context_uload(&pcb[0], "/bin/pal");
   context_uload(&pcb[1], "/bin/hello");
-  // switch_boot_pcb();
+  switch_boot_pcb();
 }
 
 _Context* schedule(_Context *prev) {

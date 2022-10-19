@@ -2,8 +2,10 @@
 #include <amdev.h>
 
 size_t serial_write(const void *buf, size_t offset, size_t len) {
-  _yield();
+  _yield(); 
+  _putc(" ");   // I don't know but it only works when I add them
   for(int i=0;i<len;i++) _putc(((char *)buf)[i]);
+  _putc(" ");
   return len;
 }
 
