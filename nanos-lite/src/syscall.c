@@ -1,6 +1,7 @@
 #include "common.h"
 #include "syscall.h"
 #include "fs.h"
+#include "memory.h"
 
 int32_t sys_yield() {
   _yield();
@@ -16,9 +17,6 @@ size_t sys_write(int fd, char *buf, size_t count) {
   return count;
 }
 
-int sys_brk(uintptr_t pb) {
-  return 0;
-}
 
 _Context* do_syscall(_Context *c) {
   uintptr_t a[4];
@@ -40,7 +38,7 @@ _Context* do_syscall(_Context *c) {
       c->GPRx = fs_write((int)a[1], (const char *)a[2], (size_t)a[3]);
       return c;
     case SYS_brk:
-      c->GPRx = sys_brk((uintptr_t)a[1]);
+      c->GPRx = mm_brk((uintptr_t)a[1], (intptr_t)a[2]);
       return c;
     case SYS_open:
       c->GPRx = fs_open((const char *)a[1], (int)a[2], (int)a[3]);

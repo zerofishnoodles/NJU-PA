@@ -86,32 +86,27 @@ void __am_switch(_Context *c) {
 }
 
 int _map(_AddressSpace *as, void *va, void *pa, int prot) {
-  // printf("map va: %x pa: %x as-ptr: %x %d\n", va, pa, as->ptr, (PDX(va) << 2) );
+  // printf("map va: %x pa: %x as-ptr: %x %d\n", va, pa, as->ptr, (PDX(va) << 2));
+
   PTE pte = (((paddr_t)pa >> PGSHFT) << 10) | PTE_V | PTE_R | PTE_W | PTE_X;
-  // printf("pte: %x %x\n" ,&pte, pte);
-  PDE pde = ((paddr_t)&pte >> PGSHFT << 10) | PTE_V;
-  // printf("pde: %x %x\n" ,&pde, pde);
-
-  // pde pte addr
+  PDE pde;
+  paddr_t pte_addr;
   paddr_t pde_addr = (paddr_t)as->ptr + (PDX(va) << 2);
-  paddr_t pte_addr = PTE_ADDR(pde) | (PTX(va) << 2);
 
-  // check invalid
-  PDE exist_pde;
-  memcpy(&exist_pde, pde_addr, sizeof(pde));
-  PTE exist_pte;
-  memcpy(&exist_pte, pte_addr, sizeof(pte));
-  if(exist_pde & PTE_V == 1){
-    if(exist_pte & PTE_V == 1){
-      if(exist_pte == pte) return 0;
-      else assert(0);
-    }else{
-      memcpy(pte_addr, &pte, sizeof(pte));
-    }
-  }else{
-    memcpy(pte_addr, &pte, sizeof(pte));
-    memcpy(pde_addr, &pde, sizeof(pde));
+  //check exist and get pte addr
+  memcpy(&pde, pde_addr, sizeof(PDE));
+  if((pde & PTE_V) != 1){
+    paddr_t t_pa = pgalloc_usr(1);
+    pde = ((t_pa >> PGSHFT) << 10) | PTE_V;
+    memcpy(pde_addr, &pde, sizeof(PDE));
   }
+
+  pte_addr = PTE_ADDR(pde) | (PTX(va) << 2);
+  memcpy(pte_addr, &pte, sizeof(PTE));
+
+  // printf("pte: %x %x\n" ,pte_addr, pte);
+  // printf("pde: %x %x\n" ,pde_addr, pde);
+
   return 0;
 }
 

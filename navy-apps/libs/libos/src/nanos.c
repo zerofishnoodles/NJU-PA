@@ -69,7 +69,7 @@ void *_sbrk(intptr_t increment) {
   static char *pb;
   if(pb == 0) pb = &_end;  // first init
   char *ori_pb = pb;
-  int ret = _syscall_(SYS_brk, (intptr_t)(ori_pb + increment), 0, 0);
+  int ret = _syscall_(SYS_brk, (intptr_t)ori_pb, increment, 0);
   if(ret == 0) {
     pb += increment;
     return (void *)ori_pb;

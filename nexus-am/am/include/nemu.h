@@ -35,4 +35,7 @@
 #define MMIO_BASE 0xa0000000
 #define MMIO_SIZE 0x10000000
 
+typedef uint32_t paddr_t;
+typedef uint32_t vaddr_t;
+
 #endif
