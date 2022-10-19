@@ -28,8 +28,19 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
     fs_read(fd, &phdr, ehdr.e_phentsize);
     if(phdr.p_type == PT_LOAD) {
       fs_lseek(fd, phdr.p_offset, SEEK_SET);
-      fs_read(fd, (void*)phdr.p_vaddr, phdr.p_filesz);
-      memset((void*)(phdr.p_vaddr+phdr.p_filesz), 0, phdr.p_memsz-phdr.p_filesz);
+      uint32_t nr_pg = phdr.p_filesz / PGSIZE + 1;
+      // printf("pgsize: %d", nr_pg);
+      uint32_t paddr = (uint32_t)new_page(1);
+      _map(&pcb->as, (void *)phdr.p_vaddr, (void *)paddr, 0);
+      
+      // mutiple page
+      for(int i=1 ;i<nr_pg;i++){
+        uint32_t t_paddr = (uint32_t)new_page(1);
+        _map(&pcb->as, (void *)phdr.p_vaddr + i * PGSIZE, (void *)t_paddr, 0);
+      }
+      
+      fs_read(fd, (void*)paddr, phdr.p_filesz);
+      memset((void*)(paddr+phdr.p_filesz), 0, phdr.p_memsz-phdr.p_filesz);
     }
   }
 
@@ -51,6 +62,7 @@ void context_kload(PCB *pcb, void *entry) {
 }
 
 void context_uload(PCB *pcb, const char *filename) {
+  _protect(&pcb->as);
   uintptr_t entry = loader(pcb, filename);
 
   _Area stack;

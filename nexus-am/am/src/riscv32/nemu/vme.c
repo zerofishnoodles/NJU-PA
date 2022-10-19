@@ -81,10 +81,37 @@ void __am_switch(_Context *c) {
   if (vme_enable) {
     set_satp(c->as->ptr);
     cur_as = c->as;
+    // printf("switch satp to %x\n", c->as->ptr);
   }
 }
 
 int _map(_AddressSpace *as, void *va, void *pa, int prot) {
+  // printf("map va: %x pa: %x as-ptr: %x %d\n", va, pa, as->ptr, (PDX(va) << 2) );
+  PTE pte = (((paddr_t)pa >> PGSHFT) << 10) | PTE_V | PTE_R | PTE_W | PTE_X;
+  // printf("pte: %x %x\n" ,&pte, pte);
+  PDE pde = ((paddr_t)&pte >> PGSHFT << 10) | PTE_V;
+  // printf("pde: %x %x\n" ,&pde, pde);
+
+  // pde pte addr
+  paddr_t pde_addr = (paddr_t)as->ptr + (PDX(va) << 2);
+  paddr_t pte_addr = PTE_ADDR(pde) | (PTX(va) << 2);
+
+  // check invalid
+  PDE exist_pde;
+  memcpy(&exist_pde, pde_addr, sizeof(pde));
+  PTE exist_pte;
+  memcpy(&exist_pte, pte_addr, sizeof(pte));
+  if(exist_pde & PTE_V == 1){
+    if(exist_pte & PTE_V == 1){
+      if(exist_pte == pte) return 0;
+      else assert(0);
+    }else{
+      memcpy(pte_addr, &pte, sizeof(pte));
+    }
+  }else{
+    memcpy(pte_addr, &pte, sizeof(pte));
+    memcpy(pde_addr, &pde, sizeof(pde));
+  }
   return 0;
 }
 
@@ -92,6 +119,7 @@ _Context *_ucontext(_AddressSpace *as, _Area ustack, _Area kstack, void *entry, 
   _Context *new_ctx = ustack.end - 3 * sizeof(uint32_t) - sizeof(_Context);  // there are 3 args of _start
   memset(new_ctx, 0, sizeof(_Context) + 3 * sizeof(uint32_t));
 
-  new_ctx->epc = entry;
+  new_ctx->as = as;
+  new_ctx->epc = (uintptr_t)entry;
   return new_ctx;
 }

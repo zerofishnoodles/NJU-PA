@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include ARCH_H // "arch/x86-qemu.h", "arch/native.h", ...
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {

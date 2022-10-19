@@ -3,8 +3,11 @@
 #include "klib.h"
 
 static _Context* (*user_handler)(_Event, _Context*) = NULL;
+extern void __am_get_cur_as(_Context *c);
+extern void __am_switch(_Context *c);
 
 _Context* __am_irq_handle(_Context *c) {
+  __am_get_cur_as(c);
   _Context *next = c;
   if (user_handler) {
     _Event ev = {0};
@@ -42,7 +45,7 @@ _Context* __am_irq_handle(_Context *c) {
       next = c;
     }
   }
-
+  __am_switch(next);
   return next;
 }
 
@@ -61,7 +64,7 @@ int _cte_init(_Context*(*handler)(_Event, _Context*)) {
 _Context *_kcontext(_Area stack, void (*entry)(void *), void *arg) {
   _Context *new_ctx = stack.end - sizeof(_Context);
   memset(new_ctx, 0, sizeof(_Context));
-  new_ctx->epc = entry;
+  new_ctx->epc = (uintptr_t)entry;
   
   return new_ctx;
 }
