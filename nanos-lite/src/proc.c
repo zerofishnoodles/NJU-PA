@@ -7,6 +7,7 @@ extern void context_kload(PCB *pcb, void *entry);
 extern void context_uload(PCB *pcb, void *entry);
 static PCB pcb[MAX_NR_PROC] __attribute__((used)) = {};
 static PCB pcb_boot = {};
+static int choice;
 PCB *current = NULL;
 
 extern void naive_uload(PCB *pcb, const char *filename);
@@ -41,7 +42,16 @@ _Context* schedule(_Context *prev) {
 
   // always select pcb[0] as the new process
   // current = &pcb[0];
-  current = (current == &pcb[0] ? &pcb[1] : &pcb[0]);
+  for(int i=(choice+1)%MAX_NR_PROC;i<MAX_NR_PROC;){
+    if(pcb[i].as.ptr != 0) {
+      choice = i;
+      break;
+    }
+    i = (i+1) % MAX_NR_PROC;
+  }
+  current = &pcb[choice];
+  printf("schedule choice:%d \n",choice);
+  // current = (current == &pcb[0] ? &pcb[1] : &pcb[0]);
 
   // then return the new context
   return current->cp;

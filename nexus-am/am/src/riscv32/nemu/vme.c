@@ -3,6 +3,7 @@
 #include <nemu.h>
 #include "klib.h"
 
+
 #define PG_ALIGN __attribute((aligned(PGSIZE)))
 
 static PDE kpdirs[NR_PDE] PG_ALIGN = {};
@@ -116,5 +117,6 @@ _Context *_ucontext(_AddressSpace *as, _Area ustack, _Area kstack, void *entry, 
 
   new_ctx->as = as;
   new_ctx->epc = (uintptr_t)entry;
+  new_ctx->status = new_ctx->status | 0x2;
   return new_ctx;
 }

@@ -43,6 +43,8 @@ typedef uint32_t PDE;
 // construct virtual address from indexes and offset
 #define PGADDR(d, t, o) ((uint32_t)((d) << PDXSHFT | (t) << PTXSHFT | (o)))
 
+#define IRQ_TIMER 0x80000005  // for riscv32
+
 #endif
 
 #endif

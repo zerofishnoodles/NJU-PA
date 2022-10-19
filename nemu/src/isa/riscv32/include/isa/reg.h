@@ -11,6 +11,8 @@
 #define STVEC 0x105
 #define SRET 0x102
 #define SATP 0x180
+#define SIE 0x2
+#define SPIE 0x20
 
 typedef struct {
   struct {
@@ -23,6 +25,7 @@ typedef struct {
   vaddr_t scause;
   vaddr_t stvec;
   vaddr_t satp;
+  bool INTR;
 } CPU_state;
 
 static inline int check_reg_index(int index) {

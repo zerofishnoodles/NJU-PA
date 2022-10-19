@@ -12,6 +12,9 @@ make_EHelper(ecall) {
 }
 
 make_EHelper(sret) {
+  s0 = (cpu.sstatus & SPIE) >> 4;
+  cpu.sstatus = cpu.sstatus | s0;
+  cpu.sstatus = cpu.sstatus | SPIE;
   rtl_j(cpu.sepc+4);
   print_asm_template1(sret);
 }

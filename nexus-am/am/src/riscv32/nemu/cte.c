@@ -37,6 +37,9 @@ _Context* __am_irq_handle(_Context *c) {
       case 19:
         ev.event = _EVENT_SYSCALL;
         break;
+      case IRQ_TIMER:
+        ev.event = _EVENT_IRQ_TIMER;
+        break;
       default: ev.event = _EVENT_ERROR; break;
     }
     
