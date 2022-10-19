@@ -27,6 +27,9 @@ static inline void rtl_lcsr(rtlreg_t* dest, uint32_t r, int width) {
   case STVEC:
     rtl_mv(dest, &cpu.stvec);
     break;
+  case SATP:
+    rtl_mv(dest, &cpu.satp);
+    break;
   case 0:  // ecall
   case SRET: // sret
     break;
@@ -49,6 +52,9 @@ static inline void rtl_scsr(uint32_t r, rtlreg_t* src, int width) {
     break;
   case STVEC:
     rtl_mv(&cpu.stvec, src);
+    break;
+  case SATP:
+    rtl_mv(&cpu.satp, src);
     break;
   case 0:  //ecall
   case SRET: // sret

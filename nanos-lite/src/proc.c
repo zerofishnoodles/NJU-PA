@@ -28,10 +28,9 @@ void init_proc() {
   switch_boot_pcb();
 
   Log("Initializing processes...");
-  // naive_uload(NULL, "/bin/init");
-  context_kload(&pcb[0], (void *)hello_fun);
-  // context_uload(&pcb[0], "/bin/hello");
-  context_uload(&pcb[1], "/bin/init");
+  naive_uload(NULL, "/bin/pal");
+  // context_kload(&pcb[0], (void *)hello_fun);
+  // context_uload(&pcb[1], "/bin/init");
   switch_boot_pcb();
 }
 

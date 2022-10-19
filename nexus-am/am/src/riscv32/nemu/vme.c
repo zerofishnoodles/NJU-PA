@@ -19,6 +19,7 @@ static _Area segments[] = {      // Kernel memory mappings
 #define NR_KSEG_MAP (sizeof(segments) / sizeof(segments[0]))
 
 static inline void set_satp(void *pdir) {
+  // printf("pdir: %x", 0x80000000 | ((uintptr_t)pdir >> 12));
   asm volatile("csrw satp, %0" : : "r"(0x80000000 | ((uintptr_t)pdir >> 12)));
 }
 
@@ -39,6 +40,7 @@ int _vme_init(void* (*pgalloc_f)(size_t), void (*pgfree_f)(void*)) {
     for (; pdir_idx < pdir_idx_end; pdir_idx ++) {
       // fill PDE
       kpdirs[pdir_idx] = ((uintptr_t)ptab >> PGSHFT << 10) | PTE_V;
+      // printf("kpde: %x %x\n", &kpdirs[pdir_idx], kpdirs[pdir_idx]);
 
       // fill PTE
       PTE pte = (PGADDR(pdir_idx, 0, 0) >> PGSHFT << 10) | PTE_V | PTE_R | PTE_W | PTE_X;

@@ -1,6 +1,7 @@
 #include "cpu/exec.h"
 
 make_EHelper(ld) {
+  // if(cpu.pc == 0x801004d8) printf("addr: %x\n", id_src->addr);
   rtl_lm(&s0, &id_src->addr, decinfo.width);
   rtl_sr(id_dest->reg, &s0, 4);
 

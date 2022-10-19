@@ -19,7 +19,7 @@ make_EHelper(sret) {
 make_EHelper(csrrs) {
 #if defined(DIFF_TEST)
     difftest_skip_ref();
-#endif
+#endif 
   rtl_mv(&s0, &id_src2->val);
   rtl_or(&s1, &s0, &id_src->val);
   rtl_scsr(id_src2->reg, &s1, 4);

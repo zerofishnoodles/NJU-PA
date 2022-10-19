@@ -10,6 +10,7 @@
 #define SCAUSE 0x142
 #define STVEC 0x105
 #define SRET 0x102
+#define SATP 0x180
 
 typedef struct {
   struct {
@@ -17,11 +18,11 @@ typedef struct {
   } gpr[32];
 
   vaddr_t pc;
-  rtlreg_t sepc;
-  rtlreg_t sstatus;
-  rtlreg_t scause;
-  rtlreg_t stvec;
-
+  vaddr_t sepc;
+  vaddr_t sstatus;
+  vaddr_t scause;
+  vaddr_t stvec;
+  vaddr_t satp;
 } CPU_state;
 
 static inline int check_reg_index(int index) {
@@ -55,6 +56,10 @@ static inline const char* csr_name(uint32_t index, int width) {
     break;
   case STVEC:
     strcpy(csr_name_, "stvec");
+    return csr_name_;
+    break;
+  case SATP:
+    strcpy(csr_name_, "satp");
     return csr_name_;
     break;
   case 0:

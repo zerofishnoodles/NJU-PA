@@ -29,7 +29,7 @@ static inline make_DopHelper(csr) {
     rtl_lcsr(&op->val, op->reg, 4);
   }
 
-  // print_Dop(op->str, OP_STR_SIZE, "%s",   csr_name(op->reg, 4));
+  print_Dop(op->str, OP_STR_SIZE, "%s",   csr_name(op->reg, 4));
 }
 
 make_DHelper(U) {
